@@ -36,3 +36,10 @@
     transform: rotate(360deg);
   }
 }
+
+.SubwaySearch {
+  margin-left: 1rem;
+}
+.SubwayMap {
+  margin-left: 1rem;
+}
