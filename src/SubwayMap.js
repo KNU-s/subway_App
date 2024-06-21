@@ -1,92 +1,101 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const SubwayMap = () => {
-  const [trainPosition, setTrainPosition] = useState({
-    line: '2호선',
-    startStation: '강남',
-    endStation: '잠실',
-    percentComplete: 0
-  });
+const SubwayMap = ({subwayData, selectedLine ,setSelectedLine}) => {
+  const [data, setData] = useState(subwayData);
+  
+  const positionX = 175;
+  const positionY = 50;
+  const diffY = 75;
 
-  const subwayStations = [
-    // dummy data
-    { name: '강남', lines: ['2호선', '신분당선'], x: 50, y: 100 },
-    { name: '역삼', lines: ['2호선', '8호선'], x: 200, y: 100 },
-    { name: '선릉', lines: ['2호선', '8호선'], x: 350, y: 100 },
-    { name: '종합운동장', lines: ['2호선', '8호선'], x: 500, y: 100 },
-    { name: '선천', lines: ['2호선', '8호선'], x: 650, y: 100 },
-    { name: '잠실', lines: ['2호선', '8호선'], x: 800, y: 100 },
-
-    { name: '홍대입구', lines: ['2호선', '공항철도'], x: 50, y: 200 },
-    // Add more stations
-  ];
+  const handleLineClick = (lineId) => {
+    setSelectedLine(lineId);
+  };
 
   useEffect(() => {
-    const animationDuration = 5000; // 5 seconds for example
-    let startTime = Date.now();
+    console.log(selectedLine)
+  }, [selectedLine])
 
-    const animateTrain = () => {
-      const elapsedTime = Date.now() - startTime;
-      const percentComplete = (elapsedTime / animationDuration) * 100;
+  // 선택된 노선 정보 가져오기
+  const selectedLineData = data.find(line => line.name === selectedLine) || { stations: [] };
+  // SVG 요소 공통 속성
+  const svgAttrs = {
+    width: 350,
+    height: selectedLineData.stations.length * diffY,
+    style: { border: selectedLine !== null ? '1px solid #ccc' : {} }
+  };
 
-      if (percentComplete <= 100) {
-        setTrainPosition(prevPosition => ({
-          ...prevPosition,
-          percentComplete
-        }));
-        requestAnimationFrame(animateTrain);
-      } else {
-        // Animation complete
-        setTrainPosition(prevPosition => ({
-          ...prevPosition,
-          percentComplete: 0,
-          startStation: prevPosition.endStation,
-          endStation: '', // Reset end station or set new destination
-        }));
-      }
-    };
-
-    animateTrain();
-
-    return () => {
-      // Cleanup if needed
-    };
-  }, [trainPosition.endStation]); // Trigger animation on endStation change
-
-  const renderTrain = () => {
-    const startStation = subwayStations.find(station => station.name === trainPosition.startStation);
-    const endStation = subwayStations.find(station => station.name === trainPosition.endStation);
-
-    if (!startStation || !endStation) return null;
-
-    const x = startStation.x + (endStation.x - startStation.x) * (trainPosition.percentComplete / 100);
-    const y = startStation.y + (endStation.y - startStation.y) * (trainPosition.percentComplete / 100);
+  // 노선과 역 표시 함수
+  const renderSubwayMap = () => {
+    if (!selectedLineData) return null;
 
     return (
-      <text x={x} y={y} fontSize={40}>🚟</text>
+      <svg {...svgAttrs}>
+        {/* 선택된 노선 경로 그리기 */}
+        <g key={selectedLineData.name}>
+          {selectedLineData.stations.map((station, index) => (
+            index < selectedLineData.stations.length - 1 && (
+              <line
+                key={`${station.id}-${selectedLineData.stations[index + 1].id}`}
+                x1={positionX}
+                y1={positionY + index * diffY}
+                x2={positionX}
+                y2={positionY + (index + 1) * diffY}
+                stroke={selectedLineData.color}
+                strokeWidth="5"
+                strokeLinecap="round"
+              />
+            )
+          ))}
+        </g>
+        {/* 노선 위에 역 표시하기 */}
+        <g key={`${selectedLineData.name}-station`}>
+        {selectedLineData.stations.map((station, index) => (
+        <g key={station.id}>
+            <circle
+              cx={positionX}
+              cy={positionY + index * diffY}
+              r="6"
+              fill="#fff"
+              stroke={selectedLineData.color}
+              strokeWidth="2"
+            />
+            <text x={positionX + 10} y={positionY + index * diffY - 10} fill="#333" fontSize="15" textAnchor="left">
+              {station.name}
+            </text>
+          </g>
+        ))}
+        </g>
+      </svg>
     );
   };
 
   return (
     <div className='SubwayMap'>
-      <h1>지하철 노선도</h1>
-      <svg width="85vw" height="600">
-        {/* Render subway lines */}
-        {subwayStations.map(station => (
-          <g key={station.name}>
-            {station.lines.includes('2호선') && <line x1={station.x} y1={station.y} x2={station.x + 600} y2={station.y} stroke="#009D3E" strokeWidth="8" />}
-            {station.lines.includes('신분당선') && <line x1={station.x} y1={station.y} x2={station.x + 600} y2={station.y} stroke="#009D3E" strokeWidth="8" />}
-            {station.lines.includes('8호선') && <line x1={station.x} y1={station.y} x2={station.x + 600} y2={station.y} stroke="#009D3E" strokeWidth="8" />}
-            {station.lines.includes('공항철도') && <line x1={station.x} y1={station.y} x2={station.x + 600} y2={station.y} stroke="#009D3E" strokeWidth="8" />}
-            <circle cx={station.x} cy={station.y} r="10" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-            <text x={station.x - 5} y={station.y + 25} fontSize="12" fill="#000000">{station.name}</text>
-          </g>
+      <h2>지하철 노선 선택</h2>
+      <div className='select-button-navigate' style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {data.map(line => (
+          <button
+            key={line.name}
+            style={{
+              backgroundColor: selectedLine === line.name ? line.color : '#f0f0f0',
+              color: selectedLine === line.name ? 'white' : '#333',
+              border: 'none',
+              padding: '8px 16px',
+              margin: '4px',
+              cursor: 'pointer'
+            }}
+            onClick={() => handleLineClick(line.name)}
+          >
+            {line.name}
+          </button>
         ))}
-        {/* Render the train */}
-        {renderTrain()}
-      </svg>
+      </div>
+      <div className='subway-map' style={{marginLeft: '10rem'}}>
+        <h3>선택된 노선: {selectedLineData.name || '없음'}</h3>
+        {renderSubwayMap()}
+      </div>
     </div>
   );
 };
 
-export default SubwayMap;
+export default React.memo(SubwayMap);
