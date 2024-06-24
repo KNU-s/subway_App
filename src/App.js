@@ -1,9 +1,10 @@
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import SubwayMap from './SubwayMap';
 import SubwaySearch from './SubwaySearch';
 
+export const AppContext = React.createContext();
 function App() {
   // const mapElement = useRef(null);
   // const { naver } = window;
@@ -212,14 +213,14 @@ function App() {
     // 필요에 따라 추가 노선 및 역 정보를 계속해서 추가할 수 있습니다.
   ];
   const [selectedLine, setSelectedLine] = useState(null);
-
+  
   return (
-    <>
+    <AppContext.Provider value={{ selectedLine, setSelectedLine }}>
       <h1>Subway - Default</h1>
-      <SubwaySearch subwayData={dummyData} selectedLine={selectedLine} setSelectedLine={setSelectedLine}/>
-      <SubwayMap subwayData={dummyData} selectedLine={selectedLine} setSelectedLine={setSelectedLine}/>
+      <SubwaySearch  subwayData={dummyData} />
+      <SubwayMap subwayData={dummyData} />
       {/* <div ref={mapElement} style={{ minHeight: '85vh' }} /> */}
-    </>
+    </AppContext.Provider>
   );
 
 }

@@ -1,8 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useContext } from 'react';
+import {AppContext} from './App';
 
-const SubwayMap = ({subwayData, selectedLine ,setSelectedLine}) => {
-  const [data, setData] = useState(subwayData);
-  
+const SubwayMap = ({ subwayData }) => {
+  const { selectedLine, setSelectedLine } = useContext(AppContext);
+  const [selectedLineData, setSelectedLineData] = useState({ stations: [] });
+
+
+  // 선택된 노선 정보 가져오기
+  //const selectedLineData = subwayData.find(line => line.name === selectedLine) || { stations: [] };
+  useEffect(() => {
+    const line = subwayData.find(line => line.name === selectedLine);
+    setSelectedLineData(line || { stations: [] });
+  }, [selectedLine, subwayData]);
+
   const positionX = 175;
   const positionY = 50;
   const diffY = 75;
@@ -11,18 +21,13 @@ const SubwayMap = ({subwayData, selectedLine ,setSelectedLine}) => {
     setSelectedLine(lineId);
   };
 
-  useEffect(() => {
-    console.log(selectedLine)
-  }, [selectedLine])
 
-  // 선택된 노선 정보 가져오기
-  const selectedLineData = data.find(line => line.name === selectedLine) || { stations: [] };
   // SVG 요소 공통 속성
-  const svgAttrs = {
+  const svgAttrs = useMemo(() => ({
     width: 350,
     height: selectedLineData.stations.length * diffY,
     style: { border: selectedLine !== null ? '1px solid #ccc' : {} }
-  };
+  }), [selectedLine, selectedLineData.stations.length, diffY]);
 
   // 노선과 역 표시 함수
   const renderSubwayMap = () => {
@@ -49,21 +54,21 @@ const SubwayMap = ({subwayData, selectedLine ,setSelectedLine}) => {
         </g>
         {/* 노선 위에 역 표시하기 */}
         <g key={`${selectedLineData.name}-station`}>
-        {selectedLineData.stations.map((station, index) => (
-        <g key={station.id}>
-            <circle
-              cx={positionX}
-              cy={positionY + index * diffY}
-              r="6"
-              fill="#fff"
-              stroke={selectedLineData.color}
-              strokeWidth="2"
-            />
-            <text x={positionX + 10} y={positionY + index * diffY - 10} fill="#333" fontSize="15" textAnchor="left">
-              {station.name}
-            </text>
-          </g>
-        ))}
+          {selectedLineData.stations.map((station, index) => (
+            <g key={station.id}>
+              <circle
+                cx={positionX}
+                cy={positionY + index * diffY}
+                r="6"
+                fill="#fff"
+                stroke={selectedLineData.color}
+                strokeWidth="2"
+              />
+              <text x={positionX + 10} y={positionY + index * diffY - 10} fill="#333" fontSize="15" textAnchor="left">
+                {station.name}
+              </text>
+            </g>
+          ))}
         </g>
       </svg>
     );
@@ -73,7 +78,7 @@ const SubwayMap = ({subwayData, selectedLine ,setSelectedLine}) => {
     <div className='SubwayMap'>
       <h2>지하철 노선 선택</h2>
       <div className='select-button-navigate' style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {data.map(line => (
+        {subwayData.map(line => (
           <button
             key={line.name}
             style={{
@@ -90,7 +95,7 @@ const SubwayMap = ({subwayData, selectedLine ,setSelectedLine}) => {
           </button>
         ))}
       </div>
-      <div className='subway-map' style={{marginLeft: '10rem'}}>
+      <div className='subway-map' style={{ marginLeft: '10rem' }}>
         <h3>선택된 노선: {selectedLineData.name || '없음'}</h3>
         {renderSubwayMap()}
       </div>
@@ -98,4 +103,4 @@ const SubwayMap = ({subwayData, selectedLine ,setSelectedLine}) => {
   );
 };
 
-export default React.memo(SubwayMap);
+export default (SubwayMap);

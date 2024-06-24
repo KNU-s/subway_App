@@ -1,21 +1,29 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import {AppContext} from './App';
 
-const SubwaySearch = ({subwayData, selectedLine ,setSelectedLine}) => {
+const SubwaySearch = ({ subwayData }) => {
+
+  const { setSelectedLine } = useContext(AppContext);
+
   const [stationQuery, setStationQuery] = useState(''); // 사용자가 입력한 역 이름
   const [foundLine, setFoundLine] = useState(null); // 검색된 노선 정보
   const [stationName, setStationName] = useState(); // 검색된 역 정보
+
   // 지하철 역 정보
   const [data, setData] = useState(subwayData);
-  
-  // 역 검색
+
+
+
+  // 역 이름을 통한 노선 검색
   const searchStation = () => {
-    const found = data.find(line => line.stations.find(e => 
-      e.name === stationQuery
-    ))
+    const found = data.filter(line =>
+      line.stations.find(e => e.name.includes(stationQuery))
+    )
     if (found) {
       setStationName(stationQuery);
       setFoundLine(found);
-      setSelectedLine(found.name);
+      setSelectedLine(found[0].name);
+      
     } else {
       setFoundLine(null);
       setStationName(null);
@@ -34,12 +42,19 @@ const SubwaySearch = ({subwayData, selectedLine ,setSelectedLine}) => {
       <button onClick={searchStation}>검색</button>
 
       {foundLine ? (
-        <div>
-          <h3>{stationName}</h3>
-          <p><strong>노선:</strong> {foundLine.name}</p>
+        <div className='station-data'>
+          <h4>{`"${stationName}"를(을) 포함하는 역 정보`}</h4>
+          {foundLine.map(line => {
+            let d = `${line.name}: `
+            line.stations.map(station => {
+              if (station.name.includes(stationName)) {
+                d+=(`${station.name} `)
+              }
+            })
+          return <p>{d}</p>;})}
         </div>
       ) : (
-        <><h3><br/></h3><p>검색된 역이 없습니다.</p></>
+        <><h3><br /></h3><p>검색된 역이 없습니다.</p></>
       )}
     </div>
   );
