@@ -1,16 +1,20 @@
 import React, { useEffect, useState, useMemo, useContext } from 'react';
-import {AppContext} from './App';
+import { AppContext } from './App';
 
 const SubwayMap = ({ subwayData }) => {
   const { selectedLine, setSelectedLine } = useContext(AppContext);
   const [selectedLineData, setSelectedLineData] = useState({ stations: [] });
+  const [startStation, setStartStation] = useState(null);
+  const [endStation, setEndStation] = useState(null);
+  const [trainPosition, setTrainPosition] = useState({ x: 0, y: 0 }); // 지하철 위치
 
-
-  // 선택된 노선 정보 가져오기
-  //const selectedLineData = subwayData.find(line => line.name === selectedLine) || { stations: [] };
   useEffect(() => {
     const line = subwayData.find(line => line.name === selectedLine);
+    // 노선 변경 시 초기화
     setSelectedLineData(line || { stations: [] });
+    setStartStation(null);
+    setEndStation(null);
+    setTrainPosition({ x: 0, y: 0 }); 
   }, [selectedLine, subwayData]);
 
   const positionX = 175;
@@ -21,24 +25,67 @@ const SubwayMap = ({ subwayData }) => {
     setSelectedLine(lineId);
   };
 
+  const handleStartStationSelect = (station) => {
+    setStartStation(station);
+  };
 
-  // SVG 요소 공통 속성
+  const handleEndStationSelect = (station) => {
+    setEndStation(station);
+  };
+
+  // 노선의 총 길이 계산
+  const totalLineLength = useMemo(() => {
+    return selectedLineData.stations.length > 1 ? (selectedLineData.stations.length - 1) * diffY : 0;
+  }, [selectedLineData.stations.length, diffY]);
+
+  // 출발역과 도착역 선택에 따라 지하철 위치 계산
+  useEffect(() => {
+    if (startStation && endStation) {
+      const startIdx = selectedLineData.stations.findIndex(station => station.name === startStation);
+      const endIdx = selectedLineData.stations.findIndex(station => station.name === endStation);
+
+      const startX = positionX;
+      const startY = positionY + startIdx * diffY;
+      const endX = positionX;
+      const endY = positionY + endIdx * diffY;
+
+      const animateTrain = () => {
+        let progress = 0;
+        const animationInterval = setInterval(() => {
+          progress += 0.001; // 지하철 속도 조절
+
+          const currentX = startX;
+          const currentY = startY + (endY - startY) * progress;
+
+          setTrainPosition({ x: currentX, y: currentY });
+
+          if (progress >= 1) {
+            clearInterval(animationInterval);
+          }
+        }, 10); // 애니메이션 간격 (ms)
+
+        return () => clearInterval(animationInterval);
+      };
+
+      animateTrain();
+    }
+  }, [startStation, endStation, selectedLineData.stations, positionX, positionY, diffY]);
+
   const svgAttrs = useMemo(() => ({
     width: 350,
     height: selectedLineData.stations.length * diffY,
     style: { border: selectedLine !== null ? '1px solid #ccc' : {} }
   }), [selectedLine, selectedLineData.stations.length, diffY]);
 
-  // 노선과 역 표시 함수
   const renderSubwayMap = () => {
     if (!selectedLineData) return null;
 
     return (
       <svg {...svgAttrs}>
-        {/* 선택된 노선 경로 그리기 */}
         <g key={selectedLineData.name}>
           {selectedLineData.stations.map((station, index) => (
             index < selectedLineData.stations.length - 1 && (
+              // 노선
               <line
                 key={`${station.id}-${selectedLineData.stations[index + 1].id}`}
                 x1={positionX}
@@ -52,10 +99,10 @@ const SubwayMap = ({ subwayData }) => {
             )
           ))}
         </g>
-        {/* 노선 위에 역 표시하기 */}
         <g key={`${selectedLineData.name}-station`}>
           {selectedLineData.stations.map((station, index) => (
             <g key={station.id}>
+              {/* 역 */}
               <circle
                 cx={positionX}
                 cy={positionY + index * diffY}
@@ -70,6 +117,17 @@ const SubwayMap = ({ subwayData }) => {
             </g>
           ))}
         </g>
+        {/* 지하철 */}
+        {startStation && endStation && (
+          <circle
+            cx={trainPosition.x}
+            cy={trainPosition.y}
+            r="6"
+            fill={selectedLineData.color}
+            stroke="#333"
+            strokeWidth="2"
+          />
+        )}
       </svg>
     );
   };
@@ -97,10 +155,33 @@ const SubwayMap = ({ subwayData }) => {
       </div>
       <div className='subway-map' style={{ marginLeft: '10rem' }}>
         <h3>선택된 노선: {selectedLineData.name || '없음'}</h3>
+
+        {/* 출발역과 도착역 선택 */}
+        {selectedLineData.stations.length > 0 && (
+          <div style={{ marginTop: '1rem' }}>
+            <label htmlFor="startStation">출발역 선택:</label>
+            <select id="startStation" value={startStation} onChange={(e) => handleStartStationSelect(e.target.value)}>
+              <option value="">역을 선택하세요</option>
+              {selectedLineData.stations.map(station => (
+                <option key={station.id} value={station.name}>{station.name}</option>
+              ))}
+            </select>
+
+            <label htmlFor="endStation" style={{ marginLeft: '1rem' }}>도착역 선택:</label>
+            <select id="endStation" value={endStation} onChange={(e) => handleEndStationSelect(e.target.value)}>
+              <option value="">역을 선택하세요</option>
+              {selectedLineData.stations.map(station => (
+                <option key={station.id} value={station.name}>{station.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* 지하철 노선도 SVG 렌더링 */}
         {renderSubwayMap()}
       </div>
     </div>
   );
 };
 
-export default (SubwayMap);
+export default SubwayMap;
