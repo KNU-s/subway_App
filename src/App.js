@@ -1,8 +1,10 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import SubwayMap from './SubwayMap';
 import SubwaySearch from './SubwaySearch';
+import WebSocketComponent from './WebSocketComponent';
+import SubwayDataComponent from './SubwayDataComponent';
 
 export const AppContext = React.createContext();
 function App() {
@@ -26,7 +28,7 @@ function App() {
   //     map,
   //   });
   // }, []);
-  const [data, setData] = useState();
+  // const [data, setData] = useState();
   const dummyData = [
     {
       id: 'line1',
@@ -220,6 +222,7 @@ function App() {
       <SubwaySearch  subwayData={dummyData} />
       <SubwayMap subwayData={dummyData} />
       {/* <div ref={mapElement} style={{ minHeight: '85vh' }} /> */}
+      <SubwayDataComponent />
     </AppContext.Provider>
   );
 

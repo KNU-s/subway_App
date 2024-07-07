@@ -34,9 +34,9 @@ const SubwayMap = ({ subwayData }) => {
   };
 
   // 노선의 총 길이 계산
-  const totalLineLength = useMemo(() => {
-    return selectedLineData.stations.length > 1 ? (selectedLineData.stations.length - 1) * diffY : 0;
-  }, [selectedLineData.stations.length, diffY]);
+  // const totalLineLength = useMemo(() => {
+  //   return selectedLineData.stations.length > 1 ? (selectedLineData.stations.length - 1) * diffY : 0;
+  // }, [selectedLineData.stations.length, diffY]);
 
   // 출발역과 도착역 선택에 따라 지하철 위치 계산
   useEffect(() => {
@@ -46,7 +46,6 @@ const SubwayMap = ({ subwayData }) => {
 
       const startX = positionX;
       const startY = positionY + startIdx * diffY;
-      const endX = positionX;
       const endY = positionY + endIdx * diffY;
 
       const animateTrain = () => {

@@ -1,4 +1,5 @@
 {
+  "proxy": "http://3.37.98.203:8090/api/v1/subway/station/구리",
   "name": "subway",
   "version": "0.1.0",
   "private": true,

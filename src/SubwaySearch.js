@@ -10,8 +10,7 @@ const SubwaySearch = ({ subwayData }) => {
   const [stationName, setStationName] = useState(); // 검색된 역 정보
 
   // 지하철 역 정보
-  const [data, setData] = useState(subwayData);
-
+  const data = subwayData;
 
 
   // 역 이름을 통한 노선 검색
@@ -44,14 +43,15 @@ const SubwaySearch = ({ subwayData }) => {
       {foundLine ? (
         <div className='station-data'>
           <h4>{`"${stationName}"를(을) 포함하는 역 정보`}</h4>
-          {foundLine.map(line => {
-            let d = `${line.name}: `
-            line.stations.map(station => {
-              if (station.name.includes(stationName)) {
-                d+=(`${station.name} `)
-              }
+          {foundLine.map((line) => {
+            let info = `${line.name}: `
+            line.stations.map((station) => {
+              if (station.name.includes(stationName))
+                info += `${station.name} `
+            return console.log()
             })
-          return <p>{d}</p>;})}
+          return <p>{info}</p>;
+          })}
         </div>
       ) : (
         <><h3><br /></h3><p>검색된 역이 없습니다.</p></>
