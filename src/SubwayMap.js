@@ -134,6 +134,7 @@ const SubwayMap = ({ subwayData }) => {
   return (
     <div className='SubwayMap'>
       <h2>지하철 노선 선택</h2>
+      <p style={{fontSize: "10px"}}>(dummyData)</p>
       <div className='select-button-navigate' style={{ display: 'flex', flexWrap: 'wrap' }}>
         {subwayData.map(line => (
           <button

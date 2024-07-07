@@ -219,10 +219,11 @@ function App() {
   return (
     <AppContext.Provider value={{ selectedLine, setSelectedLine }}>
       <h1>Subway - Default</h1>
-      <SubwaySearch  subwayData={dummyData} />
+      {/* <SubwaySearch  subwayData={dummyData} /> */}
       <SubwayMap subwayData={dummyData} />
       {/* <div ref={mapElement} style={{ minHeight: '85vh' }} /> */}
       <SubwayDataComponent />
+      
     </AppContext.Provider>
   );
 
